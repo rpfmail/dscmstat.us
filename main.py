@@ -84,6 +84,8 @@ for world_key, _ in world_counts.items():
     }
 
 for node in all_nodes:
+    if not node["phantom_type"] in PHANTOM_TYPES:
+        continue
     phantom_type = PHANTOM_TYPES[node["phantom_type"]]
 
     world_counts[node["world"]]["total"] += 1
