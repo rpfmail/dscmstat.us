@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     var dataset = {
-      label: "Players by area",
+      label: "Human players by area",
       backgroundColor: "#1abc9c",
       data: values
     };
