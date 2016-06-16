@@ -1,8 +1,26 @@
 document.addEventListener("DOMContentLoaded", function() {
+  Chart.defaults.global.animation.duration = 0;
 
   var id = document.getElementById.bind(document);
 
-  Chart.defaults.global.animation.duration = 0;
+  var eachProperty = function(object, callback) {
+    if (typeof callback !== "function") {
+      throw "callback is not a function";
+    }
+
+    for (var key in object) {
+      if (object.hasOwnProperty(key)) {
+        callback(key, object[key]);
+      }
+    }
+  };
+
+  var Colors = {
+    invader: "#c0392b",
+    human: "#ecf0f1",
+    coopPhantom: "#f1c40f",
+    hollow: "#ccc"
+  };
 
   var playerStatusChart = new Chart(id("player-status-chart"), {
       type: "pie",
@@ -10,34 +28,75 @@ document.addEventListener("DOMContentLoaded", function() {
         labels: ["Hollows", "Humans", "Coop Phantoms", "Invaders"],
         datasets: []
       }
-    }
-  );
+  });
 
   var playersPerAreaChart = new Chart(id("players-per-area-chart"), {
       type: "bar",
-      data: { labels: [], datasets: [] }
-    }
-  );
+      data: { labels: [], datasets: [] },
+      options: {
+        scales: {
+          yAxes: [{ stacked: true }],
+          xAxes: [{ stacked: true }]
+        }
+      }
+  });
 
-  var transformWorldData = function(playersPerWorld) {
-    var values = [];
-    var labels = [];
+  /**
+   * Symmetric bubblesort. Any index in `a` will correspond to the same value
+   * in every array within `s`, before and after sorting.
+   */
+  var symmetricSort = function(a, s) {
+    var n = a.length;
+    var swapped = true;
 
-    for (var worldName in playersPerWorld) {
-      if (playersPerWorld.hasOwnProperty(worldName) &&
-          worldName !== "None or loading") {
-        values.push(playersPerWorld[worldName]);
-        labels.push(worldName);
+    while (swapped) {
+      swapped = false;
+      for (var i = 1; i < n; i++) {
+        if (a[i] < a[i - 1]) {
+          var tmp  = a[i - 1];
+          a[i - 1] = a[i    ];
+          a[i    ] = tmp;
+
+          for (var j = 0; j < s.length; j++) {
+            var b     = s[j    ];
+            tmp       = b[i - 1];
+            b[i - 1 ] = b[i    ];
+            b[i     ] = tmp;
+          }
+
+          swapped = true;
+        }
       }
     }
+  };
 
-    var dataset = {
-      label: "Human players by area",
-      backgroundColor: "#1abc9c",
-      data: values
+  var transformWorldData = function(playersPerWorld) {
+    var labels = [];
+    var values = { total: [], hollow: [], human: [], coop: [], invader: [] };
+
+    eachProperty(playersPerWorld, function(worldName, world) {
+      if (worldName === "None or loading") { return; }
+
+      eachProperty(world, function(phantomType, count) {
+        if (values.hasOwnProperty(phantomType)) {
+          values[phantomType].push(count);
+        }
+      });
+
+      labels.push(worldName);
+    });
+
+    symmetricSort(values.total, [values.hollow, values.human, values.coop, values.invader, labels]);
+
+    return {
+      labels: labels,
+      datasets: [
+        { label: "Hollows", backgroundColor: Colors.hollow, data: values.hollow },
+        { label: "Humans", backgroundColor: Colors.human, data: values.human },
+        { label: "Coop Phantoms", backgroundColor: Colors.coopPhantom, data: values.coop },
+        { label: "Invaders", backgroundColor: Colors.invader, data: values.invader },
+      ]
     };
-
-    return { labels: labels, datasets: [ dataset ] };
   };
 
   var fetchStats = function(callback) {
@@ -52,32 +111,6 @@ document.addEventListener("DOMContentLoaded", function() {
     r.send();
   };
 
-  /**
-   * Symmetric bubblesort. Any index in `a` will correspond to the same value
-   * in `b`, before and after sorting.
-   */
-  var symmetricSort = function(a, b) {
-    var n = a.length;
-    var swapped = true;
-
-    while (swapped) {
-      swapped = false;
-      for (var i = 1; i < n; i++) {
-        if (a[i - 1] > a[i]) {
-          var tmp  = a[i - 1];
-          a[i - 1] = a[i];
-          a[i]     = tmp;
-
-          tmp      = b[i - 1];
-          b[i - 1] = b[i];
-          b[i]     = tmp;
-
-          swapped = true;
-        }
-      }
-    }
-  };
-
   var updateCharts = function(stats) {
     id("last-updated").innerHTML = "Last update at " + stats.lastUpdated + ".";
 
@@ -88,16 +121,13 @@ document.addEventListener("DOMContentLoaded", function() {
         stats.players.coop,
         stats.players.invader
       ],
-      backgroundColor: ["#ccc", "#ecf0f1", "#f1c40f", "#c0392b"]
+      backgroundColor: [ Colors.hollow, Colors.human, Colors.coopPhantom, Colors.invader ]
     }];
     playerStatusChart.update();
 
     var worldData = transformWorldData(stats.worlds);
-    symmetricSort(worldData.datasets[0].data, worldData.labels);
-
     playersPerAreaChart.data.labels = worldData.labels;
-    playersPerAreaChart.data.datasets[0] = worldData.datasets[0];
-
+    playersPerAreaChart.data.datasets = worldData.datasets;
     playersPerAreaChart.update();
   };
 

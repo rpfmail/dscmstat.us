@@ -14,6 +14,14 @@ PHANTOM_COOP = 1
 PHANTOM_INVADER = 2
 PHANTOM_HOLLOW = 8
 
+PHANTOM_TYPES = {
+    -1: "loading",
+    0: "human",
+    1: "coop",
+    2: "invader",
+    8: "hollow"
+}
+
 WORLDS = {
   "-1--1": "None or loading",
   "10-0": "Depths",
@@ -69,15 +77,21 @@ loading_sls = list(map(f_sl, loading_nodes))
 
 world_counts = copy.copy(WORLDS)
 
-for k, _ in world_counts.items():
-    world_counts[k] = 0
+for world_key, _ in world_counts.items():
+    world_counts[world_key] = {
+        "total": 0, "human": 0, "hollow": 0,
+        "invader": 0, "coop": 0, "loading": 0
+    }
 
-for node in human_nodes:
-    world_counts[node["world"]] += 1
+for node in all_nodes:
+    phantom_type = PHANTOM_TYPES[node["phantom_type"]]
+
+    world_counts[node["world"]]["total"] += 1
+    world_counts[node["world"]][phantom_type] += 1
 
 world_counts_readable = {}
-for world_key, human_count in world_counts.items():
-    world_counts_readable[WORLDS[world_key]] = human_count
+for world_key, value in world_counts.items():
+    world_counts_readable[WORLDS[world_key]] = value
 
 output = {
     "worlds": world_counts_readable,
