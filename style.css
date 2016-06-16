@@ -6,23 +6,25 @@ section {
   margin-bottom: 60px;
 }
 
-section.row-40-60 > div:nth-child(1) {
-  width: 39%;
-}
-
-section.row-40-60 > div:nth-child(2) {
-  width: 59%;
-}
-
-section > div {
-  display: inline-block;
-  vertical-align: top;
-}
-
 h1 {
   margin: 0;
 }
 
 #players-per-area-wrap {
   width: 100%;
+}
+
+@media (min-width: 1000px) {
+  section.row-40-60 > div:nth-child(1) {
+    width: 39%;
+  }
+
+  section.row-40-60 > div:nth-child(2) {
+    width: 59%;
+  }
+
+  section > div {
+    display: inline-block;
+    vertical-align: top;
+  }
 }
