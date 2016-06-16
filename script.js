@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+  var id = document.getElementById.bind(document);
+
   Chart.defaults.global.animation.duration = 0;
 
-  var playerStatusChart = new Chart(
-    document.getElementById("player-status-chart"),
-    {
+  var playerStatusChart = new Chart(id("player-status-chart"), {
       type: "pie",
       data: {
         labels: ["Hollows", "Humans", "Coop Phantoms", "Invaders"],
@@ -13,14 +13,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   );
 
-  var playersPerAreaChart = new Chart(
-    document.getElementById("players-per-area-chart"),
-    {
+  var playersPerAreaChart = new Chart(id("players-per-area-chart"), {
       type: "bar",
-      data: {
-        labels: [],
-        datasets: []
-      }
+      data: { labels: [], datasets: [] }
     }
   );
 
@@ -29,7 +24,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var labels = [];
 
     for (var worldName in playersPerWorld) {
-      if (playersPerWorld.hasOwnProperty(worldName) && worldName !== "None or loading") {
+      if (playersPerWorld.hasOwnProperty(worldName) &&
+          worldName !== "None or loading") {
         values.push(playersPerWorld[worldName]);
         labels.push(worldName);
       }
@@ -83,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   var updateCharts = function(stats) {
-    document.getElementById("last-updated").innerHTML = "Last updated at " + stats.lastUpdated + ".";
+    id("last-updated").innerHTML = "Last update at " + stats.lastUpdated + ".";
 
     playerStatusChart.data.datasets = [{
       data: [
