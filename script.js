@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   /**
    * Symmetric bubblesort. Any index in `a` will correspond to the same value
-   * in `b` before and after sorting.
+   * in `b`, before and after sorting.
    */
   var symmetricSort = function(a, b) {
     var n = a.length;
