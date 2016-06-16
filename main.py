@@ -79,7 +79,7 @@ for world_key, human_count in world_counts.items():
     world_counts_readable[WORLDS[world_key]] = human_count
 
 output = {
-    "world_population": world_counts_readable,
+    "worlds": world_counts_readable,
     "players": {
         "total": len(all_sls),
         "human": len(human_sls),

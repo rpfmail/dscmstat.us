@@ -1,65 +1,106 @@
 document.addEventListener("DOMContentLoaded", function() {
-  var playerCtx = document.getElementById("player-chart").getContext("2d");
-  var worldCtx = document.getElementById("world-chart").getContext("2d");
 
-  var createWorldChartData = function(data) {
-    var playerNumbers = [];
+  var playerStatusChart = new Chart(
+    document.getElementById("player-status-chart").getContext("2d"),
+    {
+      type: "pie",
+      data: {
+        labels: ["Hollows", "Humans", "Coop Phantoms", "Invaders"],
+        datasets: []
+      }
+    }
+  );
 
-    for (var key in data) {
-      if (data.hasOwnProperty(key))
-        playerNumbers.push(data[key]);
+  var playersPerAreaChart = new Chart(
+    document.getElementById("players-per-area-chart").getContext("2d"),
+    {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: []
+      }
+    }
+  );
+
+  var transformWorldData = function(playersPerWorld) {
+    var values = [];
+    var labels = [];
+
+    for (var worldName in playersPerWorld) {
+      if (playersPerWorld.hasOwnProperty(worldName)) {
+        values.push(playersPerWorld[worldName]);
+        labels.push(worldName);
+      }
     }
 
     var dataset = {
       label: "Players by area",
       backgroundColor: "#1abc9c",
-      data: playerNumbers
+      data: values
     };
 
-    console.log(dataset);
-
-    return { labels: Object.keys(data), datasets: [ dataset ] };
+    return { labels: labels, datasets: [ dataset ] };
   };
 
-  var r = new XMLHttpRequest();
-  r.open("GET", "/stats.json", true);
-  r.onreadystatechange = function() {
-    if (r.readyState != 4 || r.status != 200) {
-      return;
+  var fetchStats = function(callback) {
+    var r = new XMLHttpRequest();
+    r.open("GET", "/stats.json", true);
+    r.onreadystatechange = function() {
+      if (r.readyState != 4 || r.status != 200) {
+        return;
+      }
+      callback(JSON.parse(r.responseText));
+    };
+    r.send();
+  };
+
+  /**
+   * Symmetric bubblesort. Any index in `a` will correspond to the same value
+   * in `b` before and after sorting.
+   */
+  var symmetricSort = function(a, b) {
+    var n = a.length;
+    var swapped = true;
+
+    while (swapped) {
+      swapped = false;
+      for (var i = 1; i < n; i++) {
+        if (a[i - 1] > a[i]) {
+          var tmp  = a[i - 1];
+          a[i - 1] = a[i];
+          a[i]     = tmp;
+
+          tmp      = b[i - 1];
+          b[i - 1] = b[i];
+          b[i]     = tmp;
+
+          swapped = true;
+        }
+      }
     }
-    createCharts(r);
   };
-  r.send();
 
-  var createCharts = function(r) {
-    var stats = JSON.parse(r.responseText);
-    var players = stats.players;
+  var updateCharts = function(stats) {
+    playerStatusChart.data.datasets = [{
+      data: [
+        stats.players.hollow,
+        stats.players.human,
+        stats.players.coop,
+        stats.players.invader
+      ],
+      backgroundColor: ["#ccc", "#ecf0f1", "#f1c40f", "#c0392b"]
+    }];
+    playerStatusChart.update();
 
-    var playerChart = new Chart(playerCtx, {
-      type: "pie",
-      data: {
-        labels: [
-          "Hollows",
-          "Humans",
-          "Coop Phantoms",
-          "Invaders"
-        ],
-        datasets: [{
-          data: [
-            stats.players.hollow,
-            stats.players.human,
-            stats.players.coop,
-            stats.players.invader
-          ],
-          backgroundColor: ["#ccc", "#ecf0f1", "#f1c40f", "#c0392b"]
-        }]
-      },
-      options: {}
-    });
+    var worldData = transformWorldData(stats.worlds);
+    symmetricSort(worldData.datasets[0].data, worldData.labels);
 
-    var worldChart = new Chart(worldCtx, {
-      type: "bar",
-      data: createWorldChartData(stats.world_population)
-    });
+    playersPerAreaChart.data.labels = worldData.labels;
+    playersPerAreaChart.data.datasets[0] = worldData.datasets[0];
+
+    playersPerAreaChart.update();
   };
+
+  fetchStats(updateCharts);
+
 });
