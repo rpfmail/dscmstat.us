@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+  Chart.defaults.global.animation.duration = 0;
+
   var playerStatusChart = new Chart(
-    document.getElementById("player-status-chart").getContext("2d"),
+    document.getElementById("player-status-chart"),
     {
       type: "pie",
       data: {
@@ -12,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   );
 
   var playersPerAreaChart = new Chart(
-    document.getElementById("players-per-area-chart").getContext("2d"),
+    document.getElementById("players-per-area-chart"),
     {
       type: "bar",
       data: {
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var labels = [];
 
     for (var worldName in playersPerWorld) {
-      if (playersPerWorld.hasOwnProperty(worldName)) {
+      if (playersPerWorld.hasOwnProperty(worldName) && worldName !== "None or loading") {
         values.push(playersPerWorld[worldName]);
         labels.push(worldName);
       }
@@ -81,6 +83,8 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   var updateCharts = function(stats) {
+    document.getElementById("last-updated").innerHTML = "Last updated at " + stats.lastUpdated + ".";
+
     playerStatusChart.data.datasets = [{
       data: [
         stats.players.hollow,
@@ -101,6 +105,8 @@ document.addEventListener("DOMContentLoaded", function() {
     playersPerAreaChart.update();
   };
 
-  fetchStats(updateCharts);
+  var updateFunc = fetchStats.bind(null, updateCharts);
+  updateFunc();
+  setInterval(updateFunc, 15 * 1000);
 
 });

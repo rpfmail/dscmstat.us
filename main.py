@@ -5,6 +5,7 @@ import io
 import json
 import operator
 import sys
+import time
 import urllib.request
 
 PHANTOM_LOADING = -1
@@ -87,7 +88,8 @@ output = {
         "invader": len(invader_sls),
         "coop": len(coop_sls),
         "loading": len(loading_sls)
-    }
+    },
+    "lastUpdated": time.strftime("%d/%m/%Y %H:%M:%S")
 }
 
 with open("stats.json", "w") as fp:

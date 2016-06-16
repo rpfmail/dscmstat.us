@@ -1,12 +1,28 @@
+body {
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
 section {
   margin-bottom: 60px;
 }
 
-#player-chart-wrap {
-  width: 75%;
-  margin: 0 auto;
+section.row-40-60 > div:nth-child(1) {
+  width: 39%;
 }
 
-#world-chart-wrap {
+section.row-40-60 > div:nth-child(2) {
+  width: 59%;
+}
+
+section > div {
+  display: inline-block;
+  vertical-align: top;
+}
+
+h1 {
+  margin: 0;
+}
+
+#players-per-area-wrap {
   width: 100%;
 }
