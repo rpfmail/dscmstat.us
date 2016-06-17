@@ -90,6 +90,8 @@ from matplotlib.ticker import FuncFormatter
 
 def is_outlier(points, thresh=3.5):
     """
+    Credit: http://stackoverflow.com/a/11886564
+
     Returns a boolean array with True if points are outliers and False 
     otherwise.
 
