@@ -146,12 +146,14 @@ def is_outlier(points, thresh=3.5):
 #plt.gca().yaxis.set_major_formatter(formatter)
 for world_name, value in world_ranges_readable.items():
     x=world_ranges_readable[world_name]["human"]
+    xmin=min(x)
+    xmax=max(x)
     x=np.array(x)
     x=x[~is_outlier(x)] 
     #plt.hist(x,bins=int(math.floor(math.sqrt(len(x)))), normed=False)
     plt.hist(x,bins=int(math.floor((len(x))**(3./5.))), normed=False)
     clean_name="".join([c for c in world_name if c.isalpha() or c.isdigit() or c==' ']).rstrip()
-    plt.title("Human SLs in "+clean_name+", min=%d,max=%d" %(min(x),max(x)))
+    plt.title("Human SLs in "+world_name+", min=%d,max=%d" %(xmin,xmax))
     plt.savefig('Humans_'+clean_name+'.png')
     plt.clf()
 
